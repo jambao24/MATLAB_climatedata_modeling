@@ -1,5 +1,6 @@
 clear all; close all; clc
 n=1:365;
+% assume csv file contains 6 columns, with High-Mean-Low in Celsius, then in Fahrenheit
 load('NY_simulF_copy.csv'); 
 High = NY_simulF_copy(:,1); Low = NY_simulF_copy(:,3); Mean = NY_simulF_copy(:,2);
 HighF = NY_simulF_copy(:,4); LowF = NY_simulF_copy(:,6); MeanF = NY_simulF_copy(:,5);
@@ -23,7 +24,7 @@ plot(n,H,'m',n,L,'c',n,M,'y','Linewidth',2.3); hold on
 plot(n,Rh,'kx-',n,Rl,'kx-');  
 axis([0 365 0 37])
 title('Climate Averages for Nouveau Yathrib (2261-2290)','Fontsize',20);
-xlabel('Day of Year'), ylabel('Temperature (캜)')
+xlabel('Day of Year'), ylabel('Temperature (째C)')
 legend('Actual High','Actual Low','Actual Mean','Record High','Record Low','Location','eastoutside');
 
 figure(2)
@@ -31,7 +32,7 @@ plot(n,Hf,'m',n,Lf,'c',n,Mf,'y','Linewidth',2.3); hold on
 plot(n,Rhf,'kx-',n,Rlf,'kx-');  
 axis([0 365 30 100])
 title('Climate Averages for Nouveau Yathrib (2261-2290)','Fontsize',20);
-xlabel('Day of Year'), ylabel('Temperature (캟)')
+xlabel('Day of Year'), ylabel('Temperature (째F)')
 legend('Actual High','Actual Low','Actual Mean','Record High','Record Low','Location','eastoutside');
 
 figure(3)
@@ -40,7 +41,7 @@ plot(n,H,'m',n,L,'c',n,M,'y','Linewidth',2.3); hold on
 plot(n,Rh,'kx-',n,Rl,'kx-');  
 axis([0 365 -2 40])
 title('Temperature Simulation for Nouveau Yathrib (2261-2290)','Fontsize',20);
-xlabel('Day of Year'), ylabel('Temperature (캜)')
+xlabel('Day of Year'), ylabel('Temperature (째C)')
 legend('Actual High','Actual Low','Actual Mean','Average High','Average Low','Average Mean','Location','eastoutside');
 
 figure(4)
@@ -49,7 +50,7 @@ plot(n,Hf,'m',n,Lf,'c',n,Mf,'y','Linewidth',2.3); hold on
 plot(n,Rhf,'kx-',n,Rlf,'kx-');  
 axis([0 365 30 100])
 title('Temperature Simulation for Nouveau Yathrib (2261-2290)','Fontsize',20);
-xlabel('Day of Year'), ylabel('Temperature (캟)')
+xlabel('Day of Year'), ylabel('Temperature (째F)')
 legend('Actual High','Actual Low','Actual Mean','Average High','Average Low','Average Mean','Location','eastoutside');
 
 figure(5)
@@ -57,20 +58,20 @@ subplot(2,1,1)
 plot(n,High,'r',n,Low,'b',n,H,'m',n,L,'c'); 
 axis([0 365 -2 40])
 title('High and Low Temps');
-ylabel('Temperature (캜)');
+ylabel('Temperature (째C)');
 legend('Actual High','Actual Low','Average High','Average Low','Location','eastoutside');
 subplot(2,1,2)
 plot(n,R_0,'g',n,R_o,'k');
 axis([0 365 0 max(R_0+2)])
-title('Diurnal Temp Range (캜)');
-ylabel('Temperature (캜)');
+title('Diurnal Temp Range (째C)');
+ylabel('Temperature (째C)');
 legend('Actual Range','Average Range','Location','eastoutside');
 
 figure(6)
 plot(n,R_0,'g',n,R_o,'k');
 axis([0 365 0 max(R_0+2)])
-title('Diurnal Temp Range (캜)');
-ylabel('Temperature (캜)');
+title('Diurnal Temp Range (째C)');
+ylabel('Temperature (째C)');
 legend('Actual Range','Average Range','Location','eastoutside');
 
 
