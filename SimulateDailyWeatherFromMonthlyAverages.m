@@ -1,5 +1,6 @@
 clear all; close all; clc
 
+% % % Commented out portion is for getting daily averages from monthly averages using a basic signal processing technique
 % load('avetemps.csv')
 % AveH = transpose(avetemps(:,1));
 % AveL = transpose(avetemps(:,2));
@@ -64,7 +65,7 @@ clear all; close all; clc
 % % plot(n,Rhf,'kx-',n,Rlf,'kx-')
 % % axis([0 365 30 100])
 % % set(gca,'ytick',[30:5:100])
-% % xlabel('Day of Year'), ylabel('Temperature (°F)')
+% % xlabel('Day of Year'), ylabel('Temperature (Â°F)')
 % % title('Climate Averages for Nouveau Yathrib (2261-2290)','Fontsize',20)
 % % legend('Average High','Average Low','Mean','Record High','Record Low','Location','northeastoutside')
 % 
@@ -73,6 +74,7 @@ clear all; close all; clc
 % % save('NY_reloaded_A.csv','b2','-ASCII')
 % % save('NY_reloaded_L.csv','b3','-ASCII')
 
+% % % second part is for simulating a year's recorded weather from the daily averages
 load('NY_reloaded_A.csv'); Hm = transpose(NY_reloaded_A(:,1)); Am = transpose(NY_reloaded_A(:,2)); Lm = transpose(NY_reloaded_A(:,3));
 n = 1:365;
 
@@ -125,7 +127,7 @@ plot(n, Rh,'kx-',n, Rl,'kx-'); hold on
 plot(n, HmA,'r',n, LmA,'b',n, AmA,'g','Linewidth',1.3); hold on
 %plot(n,Range,'w','Linewidth',0.1);
 axis([0 365 -4 40])
-xlabel('Day of Year'), ylabel('Temperature (°C)')
+xlabel('Day of Year'), ylabel('Temperature (Â°C)')
 title('Temperature Simulation for Nouveau Yathrib (2261-2290)','Fontsize',20)
 legend('Average High','Average Low','Mean','Record High','Record Low','High','Low','Daily Mean','Location','northeastoutside')
 
