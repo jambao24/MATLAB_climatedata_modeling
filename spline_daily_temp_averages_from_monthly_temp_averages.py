@@ -16,27 +16,64 @@ from scipy.interpolate import CubicSpline
 
 # https://github.com/jambao24/MATLAB_climatedata_modeling/blob/main/TempSimul3%20original%20code.rtf
 
+# assign the monthly average temp for each day of a month to a numpy array with 365 elements
+# assumption: temps is an numpy array with 12 elements
+def assign_monthly_avg_to_days(temps):
+  temps_out = np.zeros(365)
+  # initialize the values of temps_out to the monthly averages in temps
+  # daily average for each day is the monthly average for that month
+  temps_out[0:31] = temps[0]
+  temps_out[31:59] = temps[1]
+  temps_out[59:90] = temps[2]
+  temps_out[90:120] = temps[3]
+  temps_out[120:151] = temps[4]
+  temps_out[151:181] = temps[5]
+  temps_out[181:212] = temps[6]
+  temps_out[212:243] = temps[7]
+  temps_out[243:273] = temps[8]
+  temps_out[273:304] = temps[9]
+  temps_out[304:334] = temps[10]
+  temps_out[334:365] = temps[11]
+  return temps_out
+
 # assumption: annual_temps is a numpy array with 365 elements
 def calculate_mean_monthly_temps(annual_temps):
   monthly_temps = np.zeros(12)
   monthly_temps[0] = np.mean(annual_temps[0:31])
   monthly_temps[1] = np.mean(annual_temps[31:59])
   monthly_temps[2] = np.mean(annual_temps[59:90])
-  monthly_temps[3] = np.mean(annual_temps[90:119])
-  monthly_temps[4] = np.mean(annual_temps[119:150])
-  monthly_temps[5] = np.mean(annual_temps[150:179])
-  monthly_temps[6] = np.mean(annual_temps[179:210])
-  monthly_temps[7] = np.mean(annual_temps[210:241])
-  monthly_temps[8] = np.mean(annual_temps[241:272])
-  monthly_temps[9] = np.mean(annual_temps[272:303])
-  monthly_temps[10] = np.mean(annual_temps[303:334])
+  monthly_temps[3] = np.mean(annual_temps[90:120])
+  monthly_temps[4] = np.mean(annual_temps[120:151])
+  monthly_temps[5] = np.mean(annual_temps[151:181])
+  monthly_temps[6] = np.mean(annual_temps[181:212])
+  monthly_temps[7] = np.mean(annual_temps[212:243])
+  monthly_temps[8] = np.mean(annual_temps[243:273])
+  monthly_temps[9] = np.mean(annual_temps[273:304])
+  monthly_temps[10] = np.mean(annual_temps[304:334])
   monthly_temps[11] = np.mean(annual_temps[334:365])
   monthly_temps = np.round(monthly_temps, 2)
   return monthly_temps
 
-high_temps = np.zeros(365)
-low_temps = np.zeros(365)
-avg_temps = np.zeros(365)
+# assumption: annual_precip is a numpy array with 365 elements
+def calculate_monthly_precip_from_daily(annual_precip):
+    monthly_precip = np.zeros(12)
+    monthly_precip[0] = np.sum(annual_precip[0:31])
+    monthly_precip[1] = np.sum(annual_precip[31:59])
+    monthly_precip[2] = np.sum(annual_precip[59:90])
+    monthly_precip[3] = np.sum(annual_precip[90:120])
+    monthly_precip[4] = np.sum(annual_precip[120:151])
+    monthly_precip[5] = np.sum(annual_precip[151:181])
+    monthly_precip[6] = np.sum(annual_precip[181:212])
+    monthly_precip[7] = np.sum(annual_precip[212:243])
+    monthly_precip[8] = np.sum(annual_precip[243:273])
+    monthly_precip[9] = np.sum(annual_precip[273:304])
+    monthly_precip[10] = np.sum(annual_precip[304:334])
+    monthly_precip[11] = np.sum(annual_precip[334:365])
+    return monthly_precip
+
+#high_temps = np.zeros(365)
+#low_temps = np.zeros(365)
+#avg_temps = np.zeros(365)
 
 # https://pythonnumericalmethods.berkeley.edu/notebooks/chapter17.03-Cubic-Spline-Interpolation.html
 
@@ -54,53 +91,9 @@ avgs_mth = np.mean([highs_mth, lows_mth], axis=0)
 
 # initialize the values of high_temps, low_temps, and avg_temps to the monthly averages
 # daily average for each day is the monthly average for that month
-high_temps[0:31] = highs_mth[0]
-low_temps[0:31] = lows_mth[0]
-avg_temps[0:31] = avgs_mth[0]
-
-high_temps[31:59] = highs_mth[1]
-low_temps[31:59] = lows_mth[1]
-avg_temps[31:59] = avgs_mth[1]
-
-high_temps[59:90] = highs_mth[2]
-low_temps[59:90] = lows_mth[2]
-avg_temps[59:90] = avgs_mth[2]
-
-high_temps[90:119] = highs_mth[3]
-low_temps[90:119] = lows_mth[3]
-avg_temps[90:119] = avgs_mth[3]
-
-high_temps[119:150] = highs_mth[4]
-low_temps[119:150] = lows_mth[4]
-avg_temps[119:150] = avgs_mth[4]
-
-high_temps[150:179] = highs_mth[5]
-low_temps[150:179] = lows_mth[5]
-avg_temps[150:179] = avgs_mth[5]
-
-high_temps[179:210] = highs_mth[6]
-low_temps[179:210] = lows_mth[6]
-avg_temps[179:210] = avgs_mth[6]
-
-high_temps[210:241] = highs_mth[7]
-low_temps[210:241] = lows_mth[7]
-avg_temps[210:241] = avgs_mth[7]
-
-high_temps[241:272] = highs_mth[8]
-low_temps[241:272] = lows_mth[8]
-avg_temps[241:272] = avgs_mth[8]
-
-high_temps[272:303] = highs_mth[9]
-low_temps[272:303] = lows_mth[9]
-avg_temps[272:303] = avgs_mth[9]
-
-high_temps[303:334] = highs_mth[10]
-low_temps[303:334] = lows_mth[10]
-avg_temps[303:334] = avgs_mth[10]
-
-high_temps[334:365] = highs_mth[11]
-low_temps[334:365] = lows_mth[11]
-avg_temps[334:365] = avgs_mth[11]
+high_temps = assign_monthly_avg_to_days(highs_mth)
+low_temps = assign_monthly_avg_to_days(lows_mth)
+avg_temps = assign_monthly_avg_to_days(avgs_mth)
 
 #print(high_temps)
 #print(low_temps)
@@ -113,7 +106,7 @@ avg_temps[334:365] = avgs_mth[11]
 # Compute a new set of annual daily means using the last 40 days of old year, first 40 days of new year, and averaging the rest of Old Year and New Year in between.
 # (We discard the first 40 days of Old Year and the last 40 days of New Year)
 
-highs_interpol_x = [10,46,75,104,133,165,197,224,257,286,315,352,10+365,46+365,75+365,104+365,133+365,165+365,197+365,224+365,257+365,286+365,315+365,352+365]
+highs_interpol_x = [10,46,75,104,133,165,199,227,258,286,315,352,10+365,46+365,75+365,104+365,133+365,165+365,199+365,227+365,258+365,286+365,315+365,352+365]
 highs_interpol_y = np.zeros(np.size(highs_interpol_x))
 highs_interpol_y[0:12] = highs_mth
 highs_interpol_y[12:24] = highs_mth
@@ -139,7 +132,7 @@ print(np.mean(high_temps_new_) - np.mean(high_temps))
 
 
 
-lows_interpol_x = [23,47,75,104,133,165,197,225,258,287,315,352,23+365,47+365,75+365,104+365,133+365,165+365,197+365,225+365,258+365,287+365,315+365,352+365]
+lows_interpol_x = [23,47,75,104,133,165,199,227,258,287,315,352,23+365,47+365,75+365,104+365,133+365,165+365,199+365,227+365,258+365,287+365,315+365,352+365]
 lows_interpol_y = np.zeros(np.size(lows_interpol_x))
 lows_interpol_y[0:12] = lows_mth
 lows_interpol_y[12:24] = lows_mth
@@ -166,6 +159,7 @@ avg_temps_new_ = np.round(avg_temps_new_, 2)
 high_temps_new_ = np.round(high_temps_new_, 2)
 low_temps_new_ = np.round(low_temps_new_, 2)
 
+'''
 plt.figure(figsize = (10,8))
 #plt.plot(time[0:365], high_temps, 'b')
 #plt.plot(time[365:730], high_temps, 'b')
@@ -176,6 +170,19 @@ plt.plot(time[0:365], low_temps_new_, 'g')
 plt.plot(time[0:365], low_temps, 'b')
 plt.plot(time[0:365], avg_temps_new_, 'r')
 #plt.plot(time[0:365], avg_temps, 'b')
+'''
+
+fig, ax = plt.subplots(figsize=(10,8))
+#plt.figure(figsize = (10,8))
+plt.plot(time[0:365], high_temps_new_, 'g')
+plt.plot(time[0:365], high_temps, 'b')
+plt.plot(time[0:365], low_temps_new_, 'g')
+plt.plot(time[0:365], low_temps, 'b')
+plt.plot(time[0:365], avg_temps_new_, 'r')
+plt.xlim(0, 365)
+plt.ylim(-10, 50)
+ax.grid()
+plt.show()
 
 from google.colab import files
 
@@ -189,9 +196,9 @@ np.savetxt('high_temps_new_.csv', high_temps_new_, delimiter=',')
 np.savetxt('low_temps_new_.csv', low_temps_new_, delimiter=',')
 np.savetxt('avg_temps_new_.csv', avg_temps_new_, delimiter=',')
 
-high_temps = np.zeros(365)
-low_temps = np.zeros(365)
-avg_temps = np.zeros(365)
+#high_temps = np.zeros(365)
+#low_temps = np.zeros(365)
+#avg_temps = np.zeros(365)
 
 # https://pythonnumericalmethods.berkeley.edu/notebooks/chapter17.03-Cubic-Spline-Interpolation.html
 
@@ -209,53 +216,9 @@ avgs_mth = np.mean([highs_mth, lows_mth], axis=0)
 
 # initialize the values of high_temps, low_temps, and avg_temps to the monthly averages
 # daily average for each day is the monthly average for that month
-high_temps[0:31] = highs_mth[0]
-low_temps[0:31] = lows_mth[0]
-avg_temps[0:31] = avgs_mth[0]
-
-high_temps[31:59] = highs_mth[1]
-low_temps[31:59] = lows_mth[1]
-avg_temps[31:59] = avgs_mth[1]
-
-high_temps[59:90] = highs_mth[2]
-low_temps[59:90] = lows_mth[2]
-avg_temps[59:90] = avgs_mth[2]
-
-high_temps[90:119] = highs_mth[3]
-low_temps[90:119] = lows_mth[3]
-avg_temps[90:119] = avgs_mth[3]
-
-high_temps[119:150] = highs_mth[4]
-low_temps[119:150] = lows_mth[4]
-avg_temps[119:150] = avgs_mth[4]
-
-high_temps[150:179] = highs_mth[5]
-low_temps[150:179] = lows_mth[5]
-avg_temps[150:179] = avgs_mth[5]
-
-high_temps[179:210] = highs_mth[6]
-low_temps[179:210] = lows_mth[6]
-avg_temps[179:210] = avgs_mth[6]
-
-high_temps[210:241] = highs_mth[7]
-low_temps[210:241] = lows_mth[7]
-avg_temps[210:241] = avgs_mth[7]
-
-high_temps[241:272] = highs_mth[8]
-low_temps[241:272] = lows_mth[8]
-avg_temps[241:272] = avgs_mth[8]
-
-high_temps[272:303] = highs_mth[9]
-low_temps[272:303] = lows_mth[9]
-avg_temps[272:303] = avgs_mth[9]
-
-high_temps[303:334] = highs_mth[10]
-low_temps[303:334] = lows_mth[10]
-avg_temps[303:334] = avgs_mth[10]
-
-high_temps[334:365] = highs_mth[11]
-low_temps[334:365] = lows_mth[11]
-avg_temps[334:365] = avgs_mth[11]
+high_temps = assign_monthly_avg_to_days(highs_mth)
+low_temps = assign_monthly_avg_to_days(lows_mth)
+avg_temps = assign_monthly_avg_to_days(avgs_mth)
 
 
 # attempted spline for high and low averages.
@@ -265,14 +228,14 @@ avg_temps[334:365] = avgs_mth[11]
 # Compute a new set of annual daily means using the last 40 days of old year, first 40 days of new year, and averaging the rest of Old Year and New Year in between.
 # (We discard the first 40 days of Old Year and the last 40 days of New Year)
 
-highs_interpol_x = [10,46,75,104,136,163,190,224,257,286,315,352,10+365,46+365,75+365,104+365,136+365,163+365,190+365,224+365,257+365,286+365,315+365,352+365]
+highs_interpol_x = [10,46,75,103,136,163,198,227,257,286,319,352,10+365,46+365,75+365,103+365,136+365,163+365,198+365,227+365,257+365,286+365,319+365,352+365]
 highs_interpol_y = np.zeros(np.size(highs_interpol_x))
 highs_interpol_y[0:12] = highs_mth
-highs_interpol_y[3] += 0.3
-highs_interpol_y[6] -= 0.1
+highs_interpol_y[3] += 0.2
+highs_interpol_y[6] -= 0.2
 highs_interpol_y[12:24] = highs_mth
-highs_interpol_y[15] += 0.3
-highs_interpol_y[18] -= 0.1
+highs_interpol_y[15] += 0.2
+highs_interpol_y[18] -= 0.2
 time = np.linspace(0, 730, 730)
 highs_interpol = CubicSpline(highs_interpol_x, highs_interpol_y)
 high_temps_new = highs_interpol(time)
@@ -289,13 +252,8 @@ high_temps_new_[40:365-40] = (np.array(high_temps_new[40:365-40]) + np.array(hig
 #print(high_temps_new_)
 
 
-highs_mth_compute365 = calculate_mean_monthly_temps(high_temps_new_)
-print(highs_mth_compute365 - highs_mth)
-print(np.mean(high_temps_new_) - np.mean(high_temps))
 
-
-
-lows_interpol_x = [23,47,75,104,133,163,190,225,258,287,315,352,23+365,47+365,75+365,104+365,133+365,163+365,190+365,225+365,258+365,287+365,315+365,352+365]
+lows_interpol_x = [23,47,73,107,135,164,190,227,258,288,315,352,23+365,47+365,73+365,107+365,135+365,164+365,190+365,227+365,258+365,288+365,315+365,352+365]
 lows_interpol_y = np.zeros(np.size(lows_interpol_x))
 lows_interpol_y[0:12] = lows_mth
 lows_interpol_y[12:24] = lows_mth
@@ -311,22 +269,194 @@ low_temps_new_[-40:] = low_temps_new[365-40:365]
 low_temps_new_[40:365-40] = (np.array(low_temps_new[40:365-40]) + np.array(low_temps_new[365+40:730-40]))/2.0
 #print(low_temps_new_)
 
+# compute new daily means from high and low temps
+avg_temps_new_ = (np.array(low_temps_new_) + np.array(high_temps_new_))/2.0
 
+
+# print out deviation in computed daily average high, mean, and low temps
+highs_mth_compute365 = calculate_mean_monthly_temps(high_temps_new_)
+print(highs_mth_compute365 - highs_mth)
+print(np.mean(high_temps_new_) - np.mean(high_temps))
+avgs_mth_compute365 = calculate_mean_monthly_temps(avg_temps_new_)
+print(avgs_mth_compute365 - avgs_mth)
+print(np.mean(avg_temps_new_) - np.mean(avg_temps))
 lows_mth_compute365 = calculate_mean_monthly_temps(low_temps_new_)
 print(lows_mth_compute365 - lows_mth)
 print(np.mean(low_temps_new_) - np.mean(low_temps))
 
-# compute new daily means from high and low temps
-avg_temps_new_ = (np.array(low_temps_new_) + np.array(high_temps_new_))/2.0
 avg_temps_new_ = np.round(avg_temps_new_, 2)
 high_temps_new_ = np.round(high_temps_new_, 2)
 low_temps_new_ = np.round(low_temps_new_, 2)
 
-plt.figure(figsize = (10,8))
-#plt.plot(time[0:365], high_temps, 'b')
-#plt.plot(time[365:730], high_temps, 'b')
-#plt.plot(time, high_temps_new, 'r')
+
+fig, ax = plt.subplots(1, figsize=(10,8))
+#plt.figure(figsize = (10,8))
 plt.plot(time[0:365], high_temps_new_, 'g')
 plt.plot(time[0:365], high_temps, 'b')
 plt.plot(time[0:365], low_temps_new_, 'g')
 plt.plot(time[0:365], low_temps, 'b')
+plt.plot(time[0:365], avg_temps_new_, 'g')
+plt.plot(time[0:365], avg_temps, 'b')
+plt.ylim(10,35)
+plt.xlim(0,365)
+ax.grid()
+plt.show()
+
+# trying to compute daily precip from monthly precip averages
+# starting with dream 22-25 C climate, but also doing nightmare 22-25 C climate
+
+precip_D_daily = np.zeros(365)
+precip_D_mth = np.array([186,177,145,100,67,54,63,70,57,89,113,161])
+
+precip_N_daily = np.zeros(365)
+precip_N_mth = np.array([186,277,145,100,87,54,33,40,27,69,103,145])
+
+
+# initialize the values of dream_D_precip, dream_N_precip, and avg_temps to the monthly averages
+# daily average for each day is the monthly average for that month
+precip_D_daily[0:31] = precip_D_mth[0]/31
+precip_N_daily[0:31] = precip_N_mth[0]/31
+
+precip_D_daily[31:59] = precip_D_mth[1]/28
+precip_N_daily[31:59] = precip_N_mth[1]/28
+
+precip_D_daily[59:90] = precip_D_mth[2]/31
+precip_N_daily[59:90] = precip_N_mth[2]/31
+
+precip_D_daily[90:120] = precip_D_mth[3]/30
+precip_N_daily[90:120] = precip_N_mth[3]/30
+
+precip_D_daily[120:151] = precip_D_mth[4]/31
+precip_N_daily[120:151] = precip_N_mth[4]/31
+
+precip_D_daily[151:181] = precip_D_mth[5]/30
+precip_N_daily[151:181] = precip_N_mth[5]/30
+
+precip_D_daily[181:212] = precip_D_mth[6]/31
+precip_N_daily[181:212] = precip_N_mth[6]/31
+
+precip_D_daily[212:243] = precip_D_mth[7]/31
+precip_N_daily[212:243] = precip_N_mth[7]/31
+
+precip_D_daily[243:273] = precip_D_mth[8]/30
+precip_N_daily[243:273] = precip_N_mth[8]/30
+
+precip_D_daily[273:304] = precip_D_mth[9]/31
+precip_N_daily[273:304] = precip_N_mth[9]/31
+
+precip_D_daily[304:334] = precip_D_mth[10]/30
+precip_N_daily[304:334] = precip_N_mth[10]/30
+
+precip_D_daily[334:365] = precip_D_mth[11]/31
+precip_N_daily[334:365] = precip_N_mth[11]/31
+
+
+p_time = np.linspace(0, 365, 365)
+
+'''
+plt.figure(figsize = (10,8))
+plt.plot(p_time, precip_D_daily, 'g')
+plt.plot(p_time, precip_N_daily, 'b')
+'''
+
+'''
+fig, ax = plt.subplots()
+ax.plot(p_time, precip_D_daily, 'g')
+ax.plot(p_time, precip_N_daily, 'b')
+
+precip_D_annual = np.trapz(precip_D_daily)
+precip_N_annual = np.trapz(precip_N_daily)
+precip_D_ann = np.sum(precip_D_daily)
+precip_N_ann = np.sum(precip_N_daily)
+print(precip_D_annual, "mm vs 1282 mm vs ", precip_D_ann, " mm")
+print(precip_N_annual, "mm vs 1266 mm vs ", precip_N_ann, " mm")
+'''
+
+'''
+https://weatherspark.com/y/137170/Average-Weather-in-Taipei-Taiwan-Year-Round#Sections-Rain
+To show variation within the months and not just the monthly totals, we show the rainfall accumulated over a sliding 31-day period centered around each day of the year.
+'''
+
+'''
+use convolution or something to get the 31-day moving average after getting the daily average for each day of the year
+https://stackoverflow.com/questions/14313510/how-to-calculate-rolling-moving-average-using-python-numpy-scipy
+'''
+
+
+# attempting the Cubic Spline method I implemented for average temperatures
+precip_D_interpol_x = [10,46,75,103,137,163,198,227,256,286,319,352,10+365,46+365,75+365,103+365,137+365,163+365,198+365,227+365,256+365,286+365,319+365,352+365]
+precip_D_interpol_y = np.zeros(np.size(precip_D_interpol_x))
+precip_D_interpol_y[0:12] = precip_D_daily[precip_D_interpol_x[0:12]]
+precip_D_interpol_y[12:24] = precip_D_daily[precip_D_interpol_x[0:12]]
+tim = np.linspace(0, 730, 730)
+precip_D_interpol = CubicSpline(precip_D_interpol_x, precip_D_interpol_y)
+precip_D_daily_new = precip_D_interpol(tim)
+
+
+precip_D_daily_new_ = np.zeros(365)
+precip_D_daily_new_[0:40] = precip_D_daily_new[365:40+365]
+precip_D_daily_new_[-40:] = precip_D_daily_new[365-40:365]
+precip_D_daily_new_[40:365-40] = (np.array(precip_D_daily_new[40:365-40]) + np.array(precip_D_daily_new[365+40:730-40]))/2.0
+
+#print(precip_D_annual, "mm vs 1282 mm vs ", precip_D_ann, " mm vs ", np.sum(precip_D_daily_new[0:365]), " mm")
+
+
+# attempt to implement the running average method from my MATLAB script
+precip_D_temp = np.zeros(730)
+# start out with the daily avgs set to the monthly avgs
+precip_D_temp[0:365] = precip_D_daily[0:365]
+precip_D_temp[365:730] = precip_D_daily[0:365]
+
+# run smoothing operation for 10 cycles
+cycle_val = 10
+for i in range(0, cycle_val):
+  # for each cycle, re-compute average daily precip based on 4-day running average across 2 calendar years
+  for j in range(0, 730-4):
+    precip_D_temp[j+2] = np.mean(precip_D_temp[j:j+4])
+
+  # truncate edges of 2-year run
+  precip_D_daily_new_runAvg = np.zeros(365)
+  precip_D_daily_new_runAvg[0:10] = precip_D_temp[365:10+365]
+  precip_D_daily_new_runAvg[-10:] = precip_D_temp[365-10:365]
+  precip_D_daily_new_runAvg[10:365-10] = (np.array(precip_D_temp[10:365-10]) + np.array(precip_D_temp[365+10:730-10]))/2.0
+
+  # compute monthly totals from smoothed daily averages
+  precip_D_daily_new_mths_rA = calculate_monthly_precip_from_daily(precip_D_daily_new_runAvg)
+  precip_D_diff_ = precip_D_daily_new_mths_rA - precip_D_mth
+
+  # correct each daily average by how much the corresponding monthly average is off from the starting data by
+  # but only for each cycle where this will run next
+  if i < cycle_val:
+    precip_D_daily_new_runAvg[0:31] -= precip_D_diff_[0]/31
+    precip_D_daily_new_runAvg[31:59] -= precip_D_diff_[1]/28
+    precip_D_daily_new_runAvg[59:90] -= precip_D_diff_[2]/31
+    precip_D_daily_new_runAvg[90:120] -= precip_D_diff_[3]/30
+    precip_D_daily_new_runAvg[120:151] -= precip_D_diff_[4]/31
+    precip_D_daily_new_runAvg[151:181] -= precip_D_diff_[5]/30
+    precip_D_daily_new_runAvg[181:212] -= precip_D_diff_[6]/31
+    precip_D_daily_new_runAvg[212:243] -= precip_D_diff_[7]/31
+    precip_D_daily_new_runAvg[243:273] -= precip_D_diff_[8]/30
+    precip_D_daily_new_runAvg[273:304] -= precip_D_diff_[9]/31
+    precip_D_daily_new_runAvg[304:334] -= precip_D_diff_[10]/30
+    precip_D_daily_new_runAvg[334:365] -= precip_D_diff_[11]/31
+    # reassign the current daily precip averages to the temp array to be smoothed in the next cycle
+    precip_D_temp[0:365] = precip_D_daily_new_runAvg[0:365]
+    precip_D_temp[365:730] = precip_D_daily_new_runAvg[0:365]
+
+
+# plot precip
+plt.figure(figsize = (10,8))
+plt.plot(tim[0:365], precip_D_daily_new_, 'g')
+plt.plot(tim[0:365], precip_D_daily, 'b')
+plt.plot(tim[0:365], precip_D_daily_new_runAvg, 'r')
+
+
+precip_D_daily_new_mths = calculate_monthly_precip_from_daily(precip_D_daily_new_)
+precip_D_daily_new_mths_rA = calculate_monthly_precip_from_daily(precip_D_daily_new_runAvg)
+
+print("Monthly precip totals from spline function: \n", np.round(precip_D_daily_new_mths, decimals=2))
+precip_D_diff = precip_D_daily_new_mths - precip_D_mth
+print("Diff from source data: \n", np.round(precip_D_diff, decimals=2))
+print("Monthly precip totals from smoothing function: \n", np.round(precip_D_daily_new_mths_rA, decimals=2))
+precip_D_diff_ = precip_D_daily_new_mths_rA - precip_D_mth
+print("Diff from source data: \n", np.round(precip_D_diff_, decimals=2))
