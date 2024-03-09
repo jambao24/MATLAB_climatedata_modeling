@@ -183,6 +183,30 @@ def compute_daily_temps_runAvg(temps_daily, temps_mth, cycle_val):
 
   return temps_temp
 
+# https://www.omnicalculator.com/physics/relative-humidity#how-to-calculate-relative-humidity
+def calculate_wetbulb(drybulb, dp_temps):
+  rel_humid = np.zeros(365)
+  c1 = 17.625
+  c2 = 243.04
+  vals1 = c1*dp_temps[0:365] / (dp_temps[0:365] + c2)
+  vals2 = c1*drybulb[0:365] / (drybulb[0:365] + c2)
+  rel_humid = 100*np.exp(vals1)/np.exp(vals2)
+
+  # https://www.omnicalculator.com/physics/wet-bulb#how-to-calculate-the-wet-bulb-temperature
+  '''
+  T _w = T*arctan(0.151977*sqrt(RH+8.313659)) + 0.00391838*sqrt(RH^3)*arctan(0.023101*RH) − arctan(RH−1.676331) + arctan(T+RH) − 4.686035
+  '''
+  wetbulb = np.zeros(rel_humid.shape[0])
+  # https://numpy.org/doc/stable/reference/generated/numpy.power.html
+  c3 = np.power(rel_humid, 1.5)
+  c4 = np.power(rel_humid+8.313659, 0.5)
+  c5 = np.arctan(0.151977*c4)
+  c6 = np.arctan(0.023101*rel_humid)
+  c7 = np.arctan(rel_humid-1.676331)
+  c8 = np.arctan(drybulb+rel_humid)
+  wetbulb = drybulb*c5 + 0.00391838*c3*c6 - c7 + c8 - 4.686035
+  return wetbulb
+
 """**Mount Hamilton climate averages**
 https://en.wikipedia.org/wiki/Mount_Hamilton_(California)#Climate
 
@@ -199,23 +223,40 @@ http://www.unit-conversion.info/texttools/replace-text/
 
 # input monthly averages here from selected climate
 
-# this is for Mount Hamilton east of San Jose CA
-highs_mth = np.array([9.8,9.3,10.7,12.9,16.8,21.7,25.9,25.8,23.6,18.6,12.6,9.2])
-lows_mth = np.array([3.9,3.2,3.8,4.8,8.6,13.3,18.4,18.1,15.7,11.3,6.3,3.3])
-avgs_mth = np.array([6.9,6.2,7.3,8.9,12.7,17.5,22.2,21.9,19.7,14.9,9.5,6.3])
-
+# this is for Mount Hamilton east of San Jose CA/now fictional Volantis
 '''
+highs_mth = np.array([44.8,43.7,37.3,25.2,14.7,10.6,11.4,22.1,31.6,42.5,46.2,45.5])
+lows_mth = np.array([32.6,32.5,23.7,11.6,2.1,-2.2,-2.2,7.3,15.6,25.5,31,32.5])
+avgs_mth = np.array([38.7,38.1,30.5,18.4,8.4,4.2,4.6,14.7,23.6,34,38.6,39])
 # adding the dewpoint stat
-dewpoint_mth = np.array([8.8,10.7,13.5,17.6,20.2,24,26.7,26.7,25,19.3,12.9,9.4])
+dewpoint_mth = np.array([26.5,26.6,18.1,6.6,-3.4,-5.8,-9.1,-6.9,4,15.7,20.1,24])
+# adding precipitation
+precip_mth = np.array([186,277,145,100,87,54,33,40,27,69,103,145])
+''''''
+highs_mth = np.array([28.2,28.1,28.7,29.8,27.9,26.4,25,26.1,27.4,29.6,29.8,28.7])
+lows_mth = np.array([20.6,20.5,19.7,19.4,16.7,13.2,11.2,11.9,15.2,18.4,20.8,20.9])
+avgs_mth = np.array([24.4,24.3,24.2,24.6,22.3,19.8,18.1,19,21.3,24,25.3,24.8])
+# adding the dewpoint stat
+dewpoint_mth = np.array([18.5,18.6,17.1,15.6,12.3,8.8,6.7,8.3,11,14,16.8,18])
+# adding precipitation
+precip_mth = np.array([186,177,145,100,67,54,63,70,57,89,113,161])
 '''
+# for fictional Dubai 2300 CE
+highs_mth = np.array([32,33.2,36.8,41.1,44,45.6,46.1,46.1,44.9,41.9,37.5,34.5])
+lows_mth = np.array([20.8,21.8,24.6,28.1,31.2,33.2,34.3,34.3,32.7,30.1,26.1,22.9])
+avgs_mth = np.array([26.4,27.5,30.7,34.6,37.6,39.4,40.2,40.2,38.8,36,31.8,28.7])
+# adding the dewpoint stat
+dewpoint_mth = np.array([12.3,13,16.5,19.9,23.4,26.4,28.1,28.4,27.7,25,20.1,15.2])
+# adding precipitation
+precip_mth = np.array([8,15,22,5,0,0,0,0,0,11,3,12])
+
+climate_name = "Fictional Dubai 2300"
+
 time = np.linspace(0, 730, 730)
 
 # https://stackoverflow.com/questions/48199077/elementwise-aggregation-average-of-values-in-a-list-of-numpy-arrays-with-same
 #avgs_mth = np.mean([highs_mth, lows_mth], axis=0)
 #print(avgs_mth)
-
-# this is for Mount Hamilton east of San Jose CA
-precip_mth = np.array([128,122,112,56,33,7,0,1,4,34,76,120])
 
 # use running_average method to compute daily mean temps monthly mean temps
 
@@ -224,11 +265,12 @@ precip_mth = np.array([128,122,112,56,33,7,0,1,4,34,76,120])
 high_temps = assign_monthly_avg_to_days(highs_mth)
 low_temps = assign_monthly_avg_to_days(lows_mth)
 avg_temps = assign_monthly_avg_to_days(avgs_mth)
-'''
+
+# for Volantis I used https://www.omnicalculator.com/physics/dew-point- above 18 = rounded to nearest 0.1, below 18 = rounded to nearest 0.5
 dewpoint_temps = assign_monthly_avg_to_days(dewpoint_mth)
 dp_temps_new = compute_daily_temps_runAvg(dewpoint_temps, dewpoint_mth, 50)
 dp_mth_compute365 = calculate_mean_monthly_temps(dp_temps_new)
-'''
+
 high_temps_new_ = compute_daily_temps_runAvg(high_temps, highs_mth, 50)
 
 highs_mth_compute365 = calculate_mean_monthly_temps(high_temps_new_)
@@ -245,21 +287,32 @@ print(np.mean(low_temps_new_) - np.mean(low_temps))
 high_temps_new_ = 1.0*np.round(1*high_temps_new_, 2)
 low_temps_new_ = 1.0*np.round(1*low_temps_new_, 2)
 avg_temps_new_ = (np.array(low_temps_new_) + np.array(high_temps_new_))/2.0
-avg_temps_new_ = 1.0*np.round(1*avg_temps_new_, 2)
+#avg_temps_new_ = 1.0*np.round(1*avg_temps_new_, 2)
+dp_temps_new_ = 1.0*np.round(1*dp_temps_new, 2)
+
+wetbulb_high_dp = calculate_wetbulb(high_temps_new_[0:365], dp_temps_new_)
+wetbulb_low_dp = calculate_wetbulb(low_temps_new_[0:365], dp_temps_new_)
+wetbulb_avg_dp = calculate_wetbulb(avg_temps_new_[0:365], dp_temps_new_)
 
 
+# https://datagy.io/matplotlib-title/
 fig, ax = plt.subplots(figsize=(10,8))
 #plt.figure(figsize = (10,8))
+plt.title(climate_name + " average daily temperatures")
+plt.xlabel("Day of year")
+plt.ylabel("Temperature (deg C)")
 plt.plot(time[0:365], high_temps_new_[0:365], 'g')
-plt.plot(time[0:365], high_temps, 'b')
+#plt.plot(time[0:365], high_temps, 'b')
 plt.plot(time[0:365], low_temps_new_[0:365], 'g')
-plt.plot(time[0:365], low_temps, 'b')
+#plt.plot(time[0:365], low_temps, 'b')
 plt.plot(time[0:365], avg_temps_new_[0:365], 'r')
 #plt.plot(time[0:365], avg_temps, 'b')
 #plt.plot(time[0:365], dewpoint_temps, 'b')
-#plt.plot(time[0:365], dp_temps_new[0:365], 'y')
+plt.plot(time[0:365], dp_temps_new_[0:365], 'y')
+plt.plot(time[0:365], wetbulb_high_dp, 'purple')
+#plt.plot(time[0:365], wetbulb_low_dp, 'purple')
 plt.xlim(0, 365)
-#plt.ylim(-10, 50)
+plt.ylim(10, 50)
 ax.grid()
 plt.show()
 
@@ -314,21 +367,6 @@ plt.xlim(0, 365)
 #plt.ylim(-10, 50)
 ax.grid()
 plt.show()
-
-from google.colab import files
-
-#https://stackoverflow.com/questions/49394737/exporting-data-from-google-colab-to-local-machine
-#https://stackoverflow.com/questions/6081008/dump-a-numpy-array-into-a-csv-file
-
-# https://stackoverflow.com/questions/32635911/convert-elements-of-an-array-from-scientific-notation-to-decimal-notation-in-pyt
-# https://www.freecodecamp.org/news/dataframe-to-csv-how-to-save-pandas-dataframes-by-exporting/
-avg_temps = np.zeros((365, 3))
-avg_temps[:,0] = high_temps_new_[0:365]
-avg_temps[:,1] = avg_temps_new_[0:365]
-avg_temps[:,2] = low_temps_new_[0:365]
-
-np.set_printoptions(suppress=True, precision=2)
-np.savetxt('avg_temps_.csv', avg_temps, delimiter=',',fmt='%f')
 
 # trying to compute daily precip from monthly precip averages
 
@@ -436,9 +474,12 @@ print("Diff from source data: \n", np.round(precip_diff_))
 
 #plt.figure(figsize = (10,8))
 fig, ax = plt.subplots(1, figsize = (10,8))
+plt.title(climate_name + " average 31-day floating precipitation")
+plt.xlabel("Day of year")
+plt.ylabel("Precipitation (mm)")
 plt.plot(tim[0:365], precip_daily_new_runAvg_sum[0:365], 'g')
 #plt.plot(tim[0:365], np.multiply(31,precip_daily_new_runAvg[0:365]), 'r')
-#plt.ylim(0, 350)
+#plt.ylim(0, 210)
 plt.xlim(0, 365)
 ax.grid()
 plt.show()
@@ -447,13 +488,36 @@ plt.show()
 # plot precip
 #plt.figure(figsize = (10,8))
 fig, ax = plt.subplots(1, figsize = (10,8))
+plt.title(climate_name + " average daily precipitation")
+plt.xlabel("Day of year")
+plt.ylabel("Precipitation (mm/day)")
 plt.plot(tim[0:365], precip_daily, 'b')
 plt.plot(tim[0:365], precip_daily_new_runAvg, 'r')
 plt.plot(tim[0:365], precip_daily_new_runAvg_sum[0:365]/31, 'g')
-#plt.ylim(0,12)
+#plt.ylim(0,7)
 plt.xlim(0,365)
 ax.grid()
 plt.show()
 
 # https://stackoverflow.com/questions/2891790/pretty-print-a-numpy-array-without-scientific-notation-and-with-given-precision
 #print(precip_daily_new_runAvg_sum[0:365])
+
+from google.colab import files
+
+#https://stackoverflow.com/questions/49394737/exporting-data-from-google-colab-to-local-machine
+#https://stackoverflow.com/questions/6081008/dump-a-numpy-array-into-a-csv-file
+
+# https://stackoverflow.com/questions/32635911/convert-elements-of-an-array-from-scientific-notation-to-decimal-notation-in-pyt
+# https://www.freecodecamp.org/news/dataframe-to-csv-how-to-save-pandas-dataframes-by-exporting/
+avg_temps = np.zeros((365, 6))
+avg_temps[:,0] = high_temps_new_[0:365]
+avg_temps[:,1] = avg_temps_new_[0:365]
+avg_temps[:,2] = low_temps_new_[0:365]
+avg_temps[:,3] = dp_temps_new_[0:365]
+avg_temps[:,4] = 1.0*np.round(wetbulb_highs_dp[0:365], 2)
+avg_temps[:,5] = 1.0*np.round(precip_daily_new_runAvg_sum[0:365], 1)
+
+np.set_printoptions(suppress=True, precision=2)
+np.savetxt('daily_averages_.csv', avg_temps, delimiter=',',fmt='%f')
+
+#np.savetxt('precip_daily_31dayavg.csv', precip_daily_new_runAvg_sum, delimiter=',',fmt='%f')
