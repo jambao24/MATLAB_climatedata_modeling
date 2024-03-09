@@ -241,16 +241,19 @@ dewpoint_mth = np.array([18.5,18.6,17.1,15.6,12.3,8.8,6.7,8.3,11,14,16.8,18])
 # adding precipitation
 precip_mth = np.array([186,177,145,100,67,54,63,70,57,89,113,161])
 '''
-# for fictional Dubai 2300 CE
-highs_mth = np.array([32,33.2,36.8,41.1,44,45.6,46.1,46.1,44.9,41.9,37.5,34.5])
-lows_mth = np.array([20.8,21.8,24.6,28.1,31.2,33.2,34.3,34.3,32.7,30.1,26.1,22.9])
-avgs_mth = np.array([26.4,27.5,30.7,34.6,37.6,39.4,40.2,40.2,38.8,36,31.8,28.7])
-# adding the dewpoint stat
-dewpoint_mth = np.array([12.3,13,16.5,19.9,23.4,26.4,28.1,28.4,27.7,25,20.1,15.2])
-# adding precipitation
-precip_mth = np.array([8,15,22,5,0,0,0,0,0,11,3,12])
 
-climate_name = "Fictional Dubai 2300"
+highs_mth = np.array([29.5,33.6,38.6,43.4,44.8,42.7,37.3,36.5,37.6,36.9,33.9,31.4])
+lows_mth = np.array([15.5,19.1,23.8,29.1,32.5,32.7,30.5,30.3,29.4,26.7,22,17.8])
+avgs_mth = np.array([22.5,26.35,31.2,36.25,38.65,37.7,33.9,33.4,33.5,31.8,27.95,24.6])
+# adding the dewpoint stat
+dewpoint_mth = np.array([8.8,10.7,13.5,17.6,20.2,24,26.7,26.7,25,19.3,12.9,9.4])
+# adding precipitation
+precip_mth = np.array([16,23,8,2,13,68,278,359,141,36,5,11])
+# adding 30-year record temps
+rec_high_mth = np.array([40,39,43,50,52,52,46,44,48,47,42,41])
+rec_low_mth = np.array([6,7,9,19,24,24,25,25,22,13,8,6])
+
+climate_name = "Fictional Delhi 2300"
 
 time = np.linspace(0, 730, 730)
 
@@ -265,6 +268,9 @@ time = np.linspace(0, 730, 730)
 high_temps = assign_monthly_avg_to_days(highs_mth)
 low_temps = assign_monthly_avg_to_days(lows_mth)
 avg_temps = assign_monthly_avg_to_days(avgs_mth)
+
+RH_temps = assign_monthly_avg_to_days(rec_high_mth)
+RL_temps = assign_monthly_avg_to_days(rec_low_mth)
 
 # for Volantis I used https://www.omnicalculator.com/physics/dew-point- above 18 = rounded to nearest 0.1, below 18 = rounded to nearest 0.5
 dewpoint_temps = assign_monthly_avg_to_days(dewpoint_mth)
@@ -311,8 +317,12 @@ plt.plot(time[0:365], avg_temps_new_[0:365], 'r')
 plt.plot(time[0:365], dp_temps_new_[0:365], 'y')
 plt.plot(time[0:365], wetbulb_high_dp, 'purple')
 #plt.plot(time[0:365], wetbulb_low_dp, 'purple')
+plt.plot(time[0:365], RH_temps, 'b')
+plt.plot(time[0:365], RL_temps, 'b')
 plt.xlim(0, 365)
-plt.ylim(10, 50)
+#plt.ylim(10, 50)
+ax.set_xticks([0, 31, 59, 90, 120, 151, 181, 212, 243, 273, 304, 334, 365])
+ax.set_yticks(np.arange(0, 55, 5))
 ax.grid()
 plt.show()
 
@@ -355,18 +365,6 @@ avg_temps_new_ = (np.array(low_temps_new_) + np.array(high_temps_new_))/2.0
 avg_temps_new_ = np.round(avg_temps_new_, 2)
 high_temps_new_ = np.round(high_temps_new_, 2)
 low_temps_new_ = np.round(low_temps_new_, 2)
-
-fig, ax = plt.subplots(figsize=(10,8))
-#plt.figure(figsize = (10,8))
-plt.plot(time[0:365], high_temps_new_, 'g')
-plt.plot(time[0:365], high_temps, 'b')
-plt.plot(time[0:365], low_temps_new_, 'g')
-plt.plot(time[0:365], low_temps, 'b')
-plt.plot(time[0:365], avg_temps_new_, 'r')
-plt.xlim(0, 365)
-#plt.ylim(-10, 50)
-ax.grid()
-plt.show()
 
 # trying to compute daily precip from monthly precip averages
 
@@ -479,8 +477,9 @@ plt.xlabel("Day of year")
 plt.ylabel("Precipitation (mm)")
 plt.plot(tim[0:365], precip_daily_new_runAvg_sum[0:365], 'g')
 #plt.plot(tim[0:365], np.multiply(31,precip_daily_new_runAvg[0:365]), 'r')
-#plt.ylim(0, 210)
+plt.ylim(0,)
 plt.xlim(0, 365)
+ax.set_xticks([0, 31, 59, 90, 120, 151, 181, 212, 243, 273, 304, 334, 365])
 ax.grid()
 plt.show()
 
@@ -494,8 +493,9 @@ plt.ylabel("Precipitation (mm/day)")
 plt.plot(tim[0:365], precip_daily, 'b')
 plt.plot(tim[0:365], precip_daily_new_runAvg, 'r')
 plt.plot(tim[0:365], precip_daily_new_runAvg_sum[0:365]/31, 'g')
-#plt.ylim(0,7)
+plt.ylim(0,)
 plt.xlim(0,365)
+ax.set_xticks([0, 31, 59, 90, 120, 151, 181, 212, 243, 273, 304, 334, 365])
 ax.grid()
 plt.show()
 
