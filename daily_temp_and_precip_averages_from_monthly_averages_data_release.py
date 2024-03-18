@@ -72,6 +72,7 @@ def calculate_monthly_precip_from_daily(annual_precip):
     return monthly_precip
 
 # assumption: monthly_precip is a numpy array with 12 elements
+# this can also be used for computing probability of precip on any one day from num days of precip in a month
 def assign_initial_daily_precip(monthly_precip):
   precip_daily = np.zeros(365)
   precip_daily[0:31] = monthly_precip[0]/31
@@ -194,6 +195,11 @@ def calculate_wetbulb(drybulb, dp_temps):
 
   # https://www.omnicalculator.com/physics/wet-bulb#how-to-calculate-the-wet-bulb-temperature
   '''
+  Although many equations have been created over the years our calculator uses the Stull formula,
+  which is accurate for relative humidities between 5% and 99% and temperatures between -20°C and 50°C.
+  It loses its accuracy in situations where both moisture and heat are low in value,
+  but even then the error range is only between -1°C to +0.65°C.
+
   T _w = T*arctan(0.151977*sqrt(RH+8.313659)) + 0.00391838*sqrt(RH^3)*arctan(0.023101*RH) − arctan(RH−1.676331) + arctan(T+RH) − 4.686035
   '''
   wetbulb = np.zeros(rel_humid.shape[0])
@@ -206,6 +212,18 @@ def calculate_wetbulb(drybulb, dp_temps):
   c8 = np.arctan(drybulb+rel_humid)
   wetbulb = drybulb*c5 + 0.00391838*c3*c6 - c7 + c8 - 4.686035
   return wetbulb
+
+# assumption: we know monthly relative humidity but not monthly dew point
+# the numpy arrays we're working with should all have 12 values
+# https://www.omnicalculator.com/physics/relative-humidity#how-to-calculate-relative-humidity
+def calculate_dp_from_RH(drybulb, rel_humid):
+  dp = np.zeros(12)
+  c1 = 17.625
+  c2 = 243.04
+  vals1 = np.log(rel_humid/100)
+  vals2 = c1*drybulb[0:12] / (drybulb[0:12] + c2)
+  dp = c2*(vals1 + vals2) / (c1 - (vals1 + vals2))
+  return dp
 
 """**Mount Hamilton climate averages**
 https://en.wikipedia.org/wiki/Mount_Hamilton_(California)#Climate
@@ -242,20 +260,34 @@ dewpoint_mth = np.array([18.5,18.6,17.1,15.6,12.3,8.8,6.7,8.3,11,14,16.8,18])
 precip_mth = np.array([186,177,145,100,67,54,63,70,57,89,113,161])
 '''
 
-highs_mth = np.array([29.5,33.6,38.6,43.4,44.8,42.7,37.3,36.5,37.6,36.9,33.9,31.4])
-lows_mth = np.array([15.5,19.1,23.8,29.1,32.5,32.7,30.5,30.3,29.4,26.7,22,17.8])
-avgs_mth = np.array([22.5,26.35,31.2,36.25,38.65,37.7,33.9,33.4,33.5,31.8,27.95,24.6])
-# adding the dewpoint stat
-dewpoint_mth = np.array([8.8,10.7,13.5,17.6,20.2,24,26.7,26.7,25,19.3,12.9,9.4])
-# adding precipitation
-precip_mth = np.array([16,23,8,2,13,68,278,359,141,36,5,11])
-# adding 30-year record temps
-rec_high_mth = np.array([40,39,43,50,52,52,46,44,48,47,42,41])
-rec_low_mth = np.array([6,7,9,19,24,24,25,25,22,13,8,6])
+dewpoint_mth = np.zeros(12)
+relhumid_mth = np.zeros(12)
 
-climate_name = "Fictional Delhi 2300"
+# https://en.wikipedia.org/wiki/Oran#Climate
+highs_mth = np.array([17,17.9,20.1,22.1,25,28.5,31.5,32.4,29.4,26,20.9,17.9])
+lows_mth = np.array([5.4,6.5,8.7,10.8,14,17.6,20.4,21,18.3,14.4,9.8,6.9])
+avgs_mth = np.array([11.2,12.2,14.4,16.5,19.5,23,25.9,26.7,23.8,20.2,15.4,12.4])
+# adding the dewpoint/humidity stat
+#dewpoint_mth = np.array([-17.25,-15.7,-12.2,-5.2,0.8,6.35,9.2,9.2,7.1,-0.7,-9.1,-14.1])
+rel_humid_mth = np.array([80,77,74,73,69,70,69,68,72,75,77,78])
+# adding precipitation
+precip_mth = np.array([46.3,41.7,37.6,35.7,23.1,3.5,0.8,2.4,17.4,34.4,64.6,47.9])
+# adding precip days
+precip_days_mth = np.array([6.3,5.6,5,4.7,3.1,0.9,0.2,0.5,2.6,4.4,6.6,5.7])
+# adding 30-year record temps
+rec_high_mth = np.array([27.3,33,36.6,36.6,40,42.2,44.4,43,41.1,37.4,33,30.8])
+rec_low_mth = np.array([-2.9,-3.3,-1.3,1,3,9.5,11.5,10,7.8,1.2,1,-2.0])
+
+climate_name = "Oran, Algeria 2000"
 
 time = np.linspace(0, 730, 730)
+
+# assumption: either dewpoint_mth is all zeros or relhumid_mth is all zeros, but not both
+# default: dewpoint_mth data is available making relhumid_mth redundant
+# https://stackoverflow.com/questions/18395725/test-if-numpy-array-contains-only-zeros
+if (np.all(dewpoint_mth == 0)) and not (np.all(relhumid_mth == 0)):
+  dewpoint_mth = calculate_dp_from_RH(avgs_mth, relhumid_mth)
+
 
 # https://stackoverflow.com/questions/48199077/elementwise-aggregation-average-of-values-in-a-list-of-numpy-arrays-with-same
 #avgs_mth = np.mean([highs_mth, lows_mth], axis=0)
@@ -296,6 +328,7 @@ avg_temps_new_ = (np.array(low_temps_new_) + np.array(high_temps_new_))/2.0
 #avg_temps_new_ = 1.0*np.round(1*avg_temps_new_, 2)
 dp_temps_new_ = 1.0*np.round(1*dp_temps_new, 2)
 
+
 wetbulb_high_dp = calculate_wetbulb(high_temps_new_[0:365], dp_temps_new_)
 wetbulb_low_dp = calculate_wetbulb(low_temps_new_[0:365], dp_temps_new_)
 wetbulb_avg_dp = calculate_wetbulb(avg_temps_new_[0:365], dp_temps_new_)
@@ -314,7 +347,7 @@ plt.plot(time[0:365], low_temps_new_[0:365], 'g')
 plt.plot(time[0:365], avg_temps_new_[0:365], 'r')
 #plt.plot(time[0:365], avg_temps, 'b')
 #plt.plot(time[0:365], dewpoint_temps, 'b')
-plt.plot(time[0:365], dp_temps_new_[0:365], 'y')
+#plt.plot(time[0:365], dp_temps_new_[0:365], 'y')
 plt.plot(time[0:365], wetbulb_high_dp, 'purple')
 #plt.plot(time[0:365], wetbulb_low_dp, 'purple')
 plt.plot(time[0:365], RH_temps, 'b')
@@ -322,7 +355,7 @@ plt.plot(time[0:365], RL_temps, 'b')
 plt.xlim(0, 365)
 #plt.ylim(10, 50)
 ax.set_xticks([0, 31, 59, 90, 120, 151, 181, 212, 243, 273, 304, 334, 365])
-ax.set_yticks(np.arange(0, 55, 5))
+ax.set_yticks(np.arange(-10, 50, 5))
 ax.grid()
 plt.show()
 
@@ -375,6 +408,8 @@ tim = np.linspace(0, 730, 730)
 # daily average for each day is the monthly average for that month
 precip_daily = assign_initial_daily_precip(precip_mth)
 
+precip_prob_daily = assign_initial_daily_precip(precip_days_mth)
+
 
 p_time = np.linspace(0, 365, 365)
 
@@ -394,12 +429,19 @@ precip_temp = np.zeros(730)
 precip_temp[0:365] = precip_daily[0:365]
 precip_temp[365:730] = precip_daily[0:365]
 
+precip_p_temp = np.zeros(730)
+# start out with the daily avgs set to the monthly avgs
+precip_p_temp[0:365] = precip_prob_daily[0:365]
+precip_p_temp[365:730] = precip_prob_daily[0:365]
+
 # run smoothing operation for n cycles
 cycle_val = 20
 for i in range(0, cycle_val):
   # for each cycle, re-compute average daily precip based on 4-day running average across 2 calendar years
   for j in range(0, 730-4):
     precip_temp[j+2] = np.mean(precip_temp[j:j+4])
+
+    precip_p_temp[j+2] = np.mean(precip_p_temp[j:j+4])
 
   # truncate edges of 2-year run
   precip_daily_new_runAvg = np.zeros(365)
@@ -410,6 +452,18 @@ for i in range(0, cycle_val):
   # compute monthly totals from smoothed daily averages
   precip_daily_new_mths_rA = calculate_monthly_precip_from_daily(precip_daily_new_runAvg)
   precip_diff_ = precip_daily_new_mths_rA - precip_mth
+
+
+  # truncate edges of 2-year run
+  precip_p_daily_new_runAvg = np.zeros(365)
+  precip_p_daily_new_runAvg[0:10] = precip_p_temp[365:10+365]
+  precip_p_daily_new_runAvg[-10:] = precip_p_temp[365-10:365]
+  precip_p_daily_new_runAvg[10:365-10] = (np.array(precip_p_temp[10:365-10]) + np.array(precip_p_temp[365+10:730-10]))/2.0
+  # compute monthly totals from smoothed daily averages
+  precip_p_daily_new_mths_rA = calculate_monthly_precip_from_daily(precip_p_daily_new_runAvg)
+  precip_p_diff_ = precip_p_daily_new_mths_rA - precip_days_mth
+
+
 
   # correct each daily average by how much the corresponding monthly average is off from the starting data by
   # but only for each cycle where this will run next
@@ -432,13 +486,38 @@ for i in range(0, cycle_val):
     precip_temp[0:365] = precip_daily_new_runAvg[0:365]
     precip_temp[365:730] = precip_daily_new_runAvg[0:365]
 
+    precip_p_daily_new_runAvg[0:31] -= precip_p_diff_[0]/31
+    precip_p_daily_new_runAvg[31:59] -= precip_p_diff_[1]/28
+    precip_p_daily_new_runAvg[59:90] -= precip_p_diff_[2]/31
+    precip_p_daily_new_runAvg[90:120] -= precip_p_diff_[3]/30
+    precip_p_daily_new_runAvg[120:151] -= precip_p_diff_[4]/31
+    precip_p_daily_new_runAvg[151:181] -= precip_p_diff_[5]/30
+    precip_p_daily_new_runAvg[181:212] -= precip_p_diff_[6]/31
+    precip_p_daily_new_runAvg[212:243] -= precip_p_diff_[7]/31
+    precip_p_daily_new_runAvg[243:273] -= precip_p_diff_[8]/30
+    precip_p_daily_new_runAvg[273:304] -= precip_p_diff_[9]/31
+    precip_p_daily_new_runAvg[304:334] -= precip_p_diff_[10]/30
+    precip_p_daily_new_runAvg[334:365] -= precip_p_diff_[11]/31
+    # reassign all negative values to equal 0; this is average precipitation
+    precip_p_daily_new_runAvg[precip_daily_new_runAvg < 0] = 0
+    # reassign the current daily precip averages to the temp array to be smoothed in the next cycle
+    precip_p_temp[0:365] = precip_p_daily_new_runAvg[0:365]
+    precip_p_temp[365:730] = precip_p_daily_new_runAvg[0:365]
+
 
 
 precip_D_daily_new_mths_rA = calculate_monthly_precip_from_daily(precip_daily_new_runAvg)
 
-print("Dream monthly precip totals from smoothing function: \n", np.round(precip_daily_new_mths_rA, decimals=2))
+print("Monthly precip totals from smoothing function: \n", np.round(precip_daily_new_mths_rA, decimals=2))
 precip_diff_ = precip_daily_new_mths_rA - precip_mth
 print("Diff from source data: \n", np.round(precip_diff_, decimals=2))
+
+
+precip_p_D_daily_new_mths_rA = calculate_monthly_precip_from_daily(precip_p_daily_new_runAvg)
+
+print("Monthly precip days from smoothing function: \n", np.round(precip_p_daily_new_mths_rA, decimals=2))
+precip_p_diff_ = precip_p_daily_new_mths_rA - precip_days_mth
+print("Diff from source data: \n", np.round(precip_p_diff_, decimals=2))
 
 # attempt at implementing the 31-day running average sum for each day of the year for dream climate
 # assumption: precip_D_daily_new_runAvg already contains the current simulated daily average precipitation
@@ -447,14 +526,26 @@ precip_daily_new_runAvg_base[0:365] = precip_daily_new_runAvg
 precip_daily_new_runAvg_base[365:730] = precip_daily_new_runAvg
 precip_daily_new_runAvg_sum = np.zeros(730)
 
+# copy previous code for daily precip prob
+precip_p_daily_new_runAvg_base = np.zeros(730)
+precip_p_daily_new_runAvg_base[0:365] = precip_p_daily_new_runAvg
+precip_p_daily_new_runAvg_base[365:730] = precip_p_daily_new_runAvg
+precip_p_daily_new_runAvg_smooth = np.zeros(730)
+
 for i in range(0+15, 730-15):
   precip_daily_new_runAvg_sum[i] = np.sum(precip_daily_new_runAvg_base[i-15:i+16])
 
+  precip_p_daily_new_runAvg_smooth[i] = np.mean(precip_p_daily_new_runAvg_base[i-15:i+16])
+
 precip_daily_new_runAvg_sum[0:15] = precip_daily_new_runAvg_sum[365:365+15]
 precip_daily_new_runAvg_sum[730-15:] = precip_daily_new_runAvg_sum[365-15:365]
-
 precip_daily_new_runAvg_sum_avg = np.zeros(365)
 precip_daily_new_runAvg_sum_avg = precip_daily_new_runAvg_sum[0:365]/31
+
+precip_p_daily_new_runAvg_smooth[0:15] = precip_p_daily_new_runAvg_smooth[365:365+15]
+precip_p_daily_new_runAvg_smooth[730-15:] = precip_p_daily_new_runAvg_smooth[365-15:365]
+precip_p_daily_new_runAvg_ = np.zeros(365)
+precip_p_daily_new_runAvg_ = precip_p_daily_new_runAvg_smooth[0:365]
 
 
 running_avg_yearly_sum = calculate_monthly_precip_from_daily(precip_daily_new_runAvg_sum_avg)
@@ -465,6 +556,12 @@ running_avg_yearly_sum = calculate_monthly_precip_from_daily(precip_daily_new_ru
 
 print("Monthly precip totals from 31-day moving average: \n", np.round(running_avg_yearly_sum, decimals=2))
 print("Monthly precip totals (original): \n", precip_mth)
+precip_diff_ = running_avg_yearly_sum - precip_mth
+print("Diff from source data: \n", np.round(precip_diff_))
+
+running_avg_yearly_sum_prob = calculate_monthly_precip_from_daily(precip_p_daily_new_runAvg_)
+print("Monthly precip days count from 31-day moving average: \n", np.round(running_avg_yearly_sum_prob, decimals=2))
+print("Monthly precip days count (original): \n", precip_days_mth)
 precip_diff_ = running_avg_yearly_sum - precip_mth
 print("Diff from source data: \n", np.round(precip_diff_))
 
@@ -493,11 +590,71 @@ plt.ylabel("Precipitation (mm/day)")
 plt.plot(tim[0:365], precip_daily, 'b')
 plt.plot(tim[0:365], precip_daily_new_runAvg, 'r')
 plt.plot(tim[0:365], precip_daily_new_runAvg_sum[0:365]/31, 'g')
+ax.set_xticks([0, 31, 59, 90, 120, 151, 181, 212, 243, 273, 304, 334, 365])
 plt.ylim(0,)
 plt.xlim(0,365)
+ax.grid()
+plt.show()
+
+
+# plot precip totals + probabilities
+#plt.figure(figsize = (10,8))
+# https://stackabuse.com/how-to-set-axis-range-xlim-ylim-in-matplotlib/
+fig, ax = plt.subplots(1, figsize = (10,8))
+plt.title(climate_name + " Average Daily Precipitation + Probability")
+plt.xlabel("Day of year")
+plt.ylabel("Precipitation (mm/day)")
+plt.plot(tim[0:365], precip_daily, 'b')
+plt.plot(tim[0:365], precip_daily_new_runAvg_sum[0:365]/31, 'g')
+ax.set_xticks([0, 31, 59, 90, 120, 151, 181, 212, 243, 273, 304, 334, 365])
+plt.ylim(0,)
+plt.xlim(0,365)
+
+ax2 = ax.twinx()
+ax2.set_ylabel("Precipitation probability")
+ax2.plot(tim[0:365], precip_prob_daily[0:365], 'r')
+ax2.plot(tim[0:365], precip_p_daily_new_runAvg_, 'y')
+
+ax.grid()
+
+ax.set_ylim(0,3.0)
+ax2.set_ylim(0,0.3)
+plt.xlim(0,365)
+plt.show()
+
+
+# plot probabilistic precipitation totals on days where it does rain
+# to do this we divide mean daily precip by daily prob of precip
+#plt.figure(figsize = (10,8))
+
+# https://stackoverflow.com/questions/42540224/conditional-operations-on-numpy-arrays
+predict_precip_int = np.zeros(365)
+predict_precip_int = np.where(precip_p_daily_new_runAvg > 0.005, np.divide(precip_daily_new_runAvg_sum[0:365]/31, precip_p_daily_new_runAvg), predict_precip_int)
+
+# let's smooth the predicted precipitation intensity lmao
+predict_precip_int_base = np.zeros(730)
+predict_precip_int_base[0:365] = predict_precip_int
+predict_precip_int_base[365:730] = predict_precip_int
+predict_precip_int_smooth = np.zeros(730)
+for i in range(0+2, 730-2):
+  predict_precip_int_smooth[i] = np.mean(predict_precip_int_base[i-2:i+2])
+predict_precip_int_smooth[0:2] = predict_precip_int_smooth[365:365+2]
+predict_precip_int_smooth[730-2:] = predict_precip_int_smooth[365-2:365]
+
+
+fig, ax = plt.subplots(1, figsize = (10,8))
+plt.title(climate_name + " predicted precipitation intensity")
+plt.xlabel("Day of year")
+plt.ylabel("Precipitation/day (mm)")
+plt.plot(tim[0:365], predict_precip_int_smooth[0:365], 'g')
+plt.ylim(0,)
+plt.xlim(0, 365)
 ax.set_xticks([0, 31, 59, 90, 120, 151, 181, 212, 243, 273, 304, 334, 365])
 ax.grid()
 plt.show()
+
+
+
 
 # https://stackoverflow.com/questions/2891790/pretty-print-a-numpy-array-without-scientific-notation-and-with-given-precision
 #print(precip_daily_new_runAvg_sum[0:365])
@@ -514,7 +671,7 @@ avg_temps[:,0] = high_temps_new_[0:365]
 avg_temps[:,1] = avg_temps_new_[0:365]
 avg_temps[:,2] = low_temps_new_[0:365]
 avg_temps[:,3] = dp_temps_new_[0:365]
-avg_temps[:,4] = 1.0*np.round(wetbulb_highs_dp[0:365], 2)
+avg_temps[:,4] = 1.0*np.round(wetbulb_high_dp[0:365], 2)
 avg_temps[:,5] = 1.0*np.round(precip_daily_new_runAvg_sum[0:365], 1)
 
 np.set_printoptions(suppress=True, precision=2)
