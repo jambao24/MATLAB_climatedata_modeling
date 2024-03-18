@@ -264,21 +264,22 @@ dewpoint_mth = np.zeros(12)
 relhumid_mth = np.zeros(12)
 
 # https://en.wikipedia.org/wiki/Oran#Climate
-highs_mth = np.array([17,17.9,20.1,22.1,25,28.5,31.5,32.4,29.4,26,20.9,17.9])
-lows_mth = np.array([5.4,6.5,8.7,10.8,14,17.6,20.4,21,18.3,14.4,9.8,6.9])
-avgs_mth = np.array([11.2,12.2,14.4,16.5,19.5,23,25.9,26.7,23.8,20.2,15.4,12.4])
+highs_mth = np.array([27.10,26.70,26.30,25.30,23.90,22.30,21.70,23.30,25.30,27.10,28.70,28.20])
+lows_mth = np.array([18.00,17.70,16.50,13.70,11.10,8.50,7.30,8.50,10.80,13.50,16.40,18.00])
+avgs_mth = np.array([22.55,22.20,21.40,19.50,17.50,15.40,14.50,15.90,18.05,20.30,22.55,23.10])
 # adding the dewpoint/humidity stat
-#dewpoint_mth = np.array([-17.25,-15.7,-12.2,-5.2,0.8,6.35,9.2,9.2,7.1,-0.7,-9.1,-14.1])
-rel_humid_mth = np.array([80,77,74,73,69,70,69,68,72,75,77,78])
+# default to dewpoint if both are available. if neither is available, can't compute wet bulb temps
+dewpoint_mth = np.array([17.00,17.00,15.40,11.90,8.20,6.00,4.90,5.80,7.30,10.40,14.00,16.50])
+rel_humid_mth = np.array([71,72,69,62,54,53,52,51,50,53,59,66])
 # adding precipitation
-precip_mth = np.array([46.3,41.7,37.6,35.7,23.1,3.5,0.8,2.4,17.4,34.4,64.6,47.9])
+precip_mth = np.array([256,222,137,48,20,25,27,33,21,18,41,93])
 # adding precip days
-precip_days_mth = np.array([6.3,5.6,5,4.7,3.1,0.9,0.2,0.5,2.6,4.4,6.6,5.7])
+precip_days_mth = np.array([17.7,18.1,12.6,7.2,4.3,3.9,4.2,5,3.4,2.3,4.3,7.6])
 # adding 30-year record temps
-rec_high_mth = np.array([27.3,33,36.6,36.6,40,42.2,44.4,43,41.1,37.4,33,30.8])
-rec_low_mth = np.array([-2.9,-3.3,-1.3,1,3,9.5,11.5,10,7.8,1.2,1,-2.0])
+rec_high_mth = np.array([35.5,36.0,36.5,35.0,34.5,33.0,32.5,32.5,35.5,36.5,37.0,37.0])
+rec_low_mth = np.array([11.0,10.0,5.5,1.5,0.5,0.0,0.5,0.0,0.5,0.5,6.5,9.5])
 
-climate_name = "Oran, Algeria 2000"
+climate_name = "Nouveau Yathrib 2290"
 
 time = np.linspace(0, 730, 730)
 
@@ -347,7 +348,7 @@ plt.plot(time[0:365], low_temps_new_[0:365], 'g')
 plt.plot(time[0:365], avg_temps_new_[0:365], 'r')
 #plt.plot(time[0:365], avg_temps, 'b')
 #plt.plot(time[0:365], dewpoint_temps, 'b')
-#plt.plot(time[0:365], dp_temps_new_[0:365], 'y')
+plt.plot(time[0:365], dp_temps_new_[0:365], 'y')
 plt.plot(time[0:365], wetbulb_high_dp, 'purple')
 #plt.plot(time[0:365], wetbulb_low_dp, 'purple')
 plt.plot(time[0:365], RH_temps, 'b')
@@ -355,7 +356,7 @@ plt.plot(time[0:365], RL_temps, 'b')
 plt.xlim(0, 365)
 #plt.ylim(10, 50)
 ax.set_xticks([0, 31, 59, 90, 120, 151, 181, 212, 243, 273, 304, 334, 365])
-ax.set_yticks(np.arange(-10, 50, 5))
+ax.set_yticks(np.arange(0, 40, 5))
 ax.grid()
 plt.show()
 
@@ -562,8 +563,8 @@ print("Diff from source data: \n", np.round(precip_diff_))
 running_avg_yearly_sum_prob = calculate_monthly_precip_from_daily(precip_p_daily_new_runAvg_)
 print("Monthly precip days count from 31-day moving average: \n", np.round(running_avg_yearly_sum_prob, decimals=2))
 print("Monthly precip days count (original): \n", precip_days_mth)
-precip_diff_ = running_avg_yearly_sum - precip_mth
-print("Diff from source data: \n", np.round(precip_diff_))
+precip_diff_p = running_avg_yearly_sum_prob - precip_days_mth
+print("Diff from source data: \n", np.round(precip_diff_p,2))
 
 
 
@@ -595,7 +596,8 @@ plt.ylim(0,)
 plt.xlim(0,365)
 ax.grid()
 plt.show()
-
+# https://stackoverflow.com/questions/2891790/pretty-print-a-numpy-array-without-scientific-notation-and-with-given-precision
+#print(precip_daily_new_runAvg_sum[0:365])
 
 # plot precip totals + probabilities
 #plt.figure(figsize = (10,8))
@@ -617,8 +619,8 @@ ax2.plot(tim[0:365], precip_p_daily_new_runAvg_, 'y')
 
 ax.grid()
 
-ax.set_ylim(0,3.0)
-ax2.set_ylim(0,0.3)
+ax.set_ylim(0,10.0)
+ax2.set_ylim(0,1.0)
 plt.xlim(0,365)
 plt.show()
 
@@ -629,7 +631,8 @@ plt.show()
 
 # https://stackoverflow.com/questions/42540224/conditional-operations-on-numpy-arrays
 predict_precip_int = np.zeros(365)
-predict_precip_int = np.where(precip_p_daily_new_runAvg > 0.005, np.divide(precip_daily_new_runAvg_sum[0:365]/31, precip_p_daily_new_runAvg), predict_precip_int)
+predict_precip_int = np.where(precip_p_daily_new_runAvg > 0.01, np.divide(precip_daily_new_runAvg_sum[0:365]/31, precip_p_daily_new_runAvg), predict_precip_int)
+predict_precip_int = np.where(precip_p_daily_new_runAvg < 0.01, 100*precip_daily_new_runAvg_sum[0:365]/31, predict_precip_int)
 
 # let's smooth the predicted precipitation intensity lmao
 predict_precip_int_base = np.zeros(730)
@@ -653,12 +656,6 @@ ax.set_xticks([0, 31, 59, 90, 120, 151, 181, 212, 243, 273, 304, 334, 365])
 ax.grid()
 plt.show()
 
-
-
-
-# https://stackoverflow.com/questions/2891790/pretty-print-a-numpy-array-without-scientific-notation-and-with-given-precision
-#print(precip_daily_new_runAvg_sum[0:365])
-
 from google.colab import files
 
 #https://stackoverflow.com/questions/49394737/exporting-data-from-google-colab-to-local-machine
@@ -666,15 +663,16 @@ from google.colab import files
 
 # https://stackoverflow.com/questions/32635911/convert-elements-of-an-array-from-scientific-notation-to-decimal-notation-in-pyt
 # https://www.freecodecamp.org/news/dataframe-to-csv-how-to-save-pandas-dataframes-by-exporting/
-avg_temps = np.zeros((365, 6))
+avg_temps = np.zeros((365, 7))
 avg_temps[:,0] = high_temps_new_[0:365]
 avg_temps[:,1] = avg_temps_new_[0:365]
 avg_temps[:,2] = low_temps_new_[0:365]
 avg_temps[:,3] = dp_temps_new_[0:365]
 avg_temps[:,4] = 1.0*np.round(wetbulb_high_dp[0:365], 2)
 avg_temps[:,5] = 1.0*np.round(precip_daily_new_runAvg_sum[0:365], 1)
+avg_temps[:,6] = 100*np.round(precip_p_daily_new_runAvg_[0:365], 4)
 
 np.set_printoptions(suppress=True, precision=2)
-np.savetxt('daily_averages_.csv', avg_temps, delimiter=',',fmt='%f')
+np.savetxt(climate_name + 'daily_averages_.csv', avg_temps, delimiter=',',fmt='%f')
 
 #np.savetxt('precip_daily_31dayavg.csv', precip_daily_new_runAvg_sum, delimiter=',',fmt='%f')
