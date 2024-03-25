@@ -221,8 +221,8 @@ def calculate_dp_from_RH(drybulb, rel_humid):
   c1 = 17.625
   c2 = 243.04
   vals1 = np.log(rel_humid/100)
-  vals2 = c1*drybulb[0:12] / (drybulb[0:12] + c2)
-  dp = c2*(vals1 + vals2) / (c1 - (vals1 + vals2))
+  vals2 = np.divide(c1*drybulb[0:12], (drybulb[0:12] + c2))
+  dp = np.divide(c2*(vals1 + vals2),(c1 - (vals1 + vals2)))
   return dp
 
 """**Mount Hamilton climate averages**
@@ -237,41 +237,81 @@ https://en.wikipedia.org/wiki/Mount_Hamilton_(California)#Climate
 128,122,112,56,33,7,0,1,4,34,76,120
 
 http://www.unit-conversion.info/texttools/replace-text/
+
+### "Dream 22-25 C 1500 mm climate" https://i.imgur.com/SMCOzy0.png
+
+highs_mth = np.array([28.2,28.1,28.7,29.8,27.9,26.4,25,26.1,27.4,29.6,29.8,28.7])
+
+lows_mth = np.array([20.6,20.5,19.7,19.4,16.7,13.2,11.2,11.9,15.2,18.4,20.8,20.9])
+
+avgs_mth = np.array([24.4,24.3,24.2,24.6,22.3,19.8,18.1,19,21.3,24,25.3,24.8])
+
+dewpoint_mth = np.array([18.5,18.6,17.1,15.6,12.3,8.8,6.7,8.3,11,14,16.8,18])
+
+precip_mth = np.array([186,177,145,100,67,54,63,70,57,89,113,161])
+
+Arequipa climate averages from Wiki and ClimatesToTravel
+
+dewpoint_mth = np.zeros(12)
+rel_humid_mth = np.zeros(12)
+
+
+'''
+highs_mth = np.array([21.8,21.4,24.2,24.7,22.3,21.7,21.7,22.2,22.7,22.8,22.7,22.5])
+lows_mth = np.array([8.5,8.7,8.3,7.1,6.2,5.4,5.2,5.4,6.2,6.4,6.6,7.6])
+avgs_mth = np.array([15.3,15,15,15.2,14.3,13.5,13.3,14,15.9,16.3,16.4,16.3])
+'''
+#### https://en.wikipedia.org/wiki/Arequipa#Climate
+#### https://www.climatestotravel.com/climate/peru/arequipa new source for average Arequipa temps
+
+highs_mth = np.array([21.1,20.9,21.3,22,22.2,21.9,21.7,22.2,22.4,22.4,22.2,21.8])
+lows_mth = np.array([10.4,10.5,10.2,9.6,8.4,7.7,7.4,7.8,8.7,9,8.9,9.8])
+avgs_mth = np.array([15.8,15.7,15.8,15.8,15.3,14.8,14.5,14.9,15.6,15.7,15.5,15.8])
+#### adding the dewpoint/humidity stat
+#### default to dewpoint if both are available. if neither is available, can't compute wet bulb temps
+rel_humid_mth = np.array([52,59,58,48,41,45,44,43,42,39,39,43])
+#### adding precipitation
+precip_mth = np.array([27.5,39.9,20.6,0.6,0.1,0.1,0,1,0.8,0.2,1,4.7])
+#### adding precip days
+precip_days_mth = np.array([4.8,5.6,4.5,0.4,0.1,0,0,0.1,0.3,0.1,0.2,1.6])
+#### adding 30-year record temps
+rec_high_mth = np.array([29.5,29.7,26.6,26.4,32,26.2,28,26.8,27,26.1,27.8,27.2])
+rec_low_mth = np.array([0.9,0,0,-2.0,0,-1.1,-3.7,-0.2,0,0.1,0,2])
+
+climate_name = "Arequipa_2020"
+
+Mecca 2300 projection (Precip Days based on current Mecca)
+----------------------------------
+45,47,48,52,54,53,54,53,55,50,48,47
+
+38.2,40.5,42.6,44.5,45.9,46.7,46.1,45.5,44.8,43.6,42.3,39.7
+
+30.8,32.6,34.35,36.4,38.2,39.5,39.6,39.4,38.5,36.6,34.9,32.35
+
+23.4,24.7,26.1,28.3,30.5,32.3,33.1,33.3,32.2,29.6,27.5,25
+
+11,13,13,17,20,24,24,25,22,18,16,12
+
+12,9,4,2,0,0,1,5,24,17,8,16
+
+3.0,1.1,2.4,0.6,0,0,0.1,0.8,3.1,3.5,2.2,2.8
+
+14.6,15.7,17.2,18.7,19.9,19.2,19.6,22.9,23.5,21.8,19.5,15.4
 """
 
 # input monthly averages here from selected climate
 
-# this is for Mount Hamilton east of San Jose CA/now fictional Volantis
-'''
-highs_mth = np.array([44.8,43.7,37.3,25.2,14.7,10.6,11.4,22.1,31.6,42.5,46.2,45.5])
-lows_mth = np.array([32.6,32.5,23.7,11.6,2.1,-2.2,-2.2,7.3,15.6,25.5,31,32.5])
-avgs_mth = np.array([38.7,38.1,30.5,18.4,8.4,4.2,4.6,14.7,23.6,34,38.6,39])
-# adding the dewpoint stat
-dewpoint_mth = np.array([26.5,26.6,18.1,6.6,-3.4,-5.8,-9.1,-6.9,4,15.7,20.1,24])
-# adding precipitation
-precip_mth = np.array([186,277,145,100,87,54,33,40,27,69,103,145])
-''''''
-highs_mth = np.array([28.2,28.1,28.7,29.8,27.9,26.4,25,26.1,27.4,29.6,29.8,28.7])
-lows_mth = np.array([20.6,20.5,19.7,19.4,16.7,13.2,11.2,11.9,15.2,18.4,20.8,20.9])
-avgs_mth = np.array([24.4,24.3,24.2,24.6,22.3,19.8,18.1,19,21.3,24,25.3,24.8])
-# adding the dewpoint stat
-dewpoint_mth = np.array([18.5,18.6,17.1,15.6,12.3,8.8,6.7,8.3,11,14,16.8,18])
-# adding precipitation
-precip_mth = np.array([186,177,145,100,67,54,63,70,57,89,113,161])
-'''
-
 dewpoint_mth = np.zeros(12)
-relhumid_mth = np.zeros(12)
+rel_humid_mth = np.zeros(12)
 
-# https://en.wikipedia.org/wiki/Oran#Climate
 highs_mth = np.array([27.10,26.70,26.30,25.30,23.90,22.30,21.70,23.30,25.30,27.10,28.70,28.20])
 lows_mth = np.array([18.00,17.70,16.50,13.70,11.10,8.50,7.30,8.50,10.80,13.50,16.40,18.00])
 avgs_mth = np.array([22.55,22.20,21.40,19.50,17.50,15.40,14.50,15.90,18.05,20.30,22.55,23.10])
 # adding the dewpoint/humidity stat
 # default to dewpoint if both are available. if neither is available, can't compute wet bulb temps
 dewpoint_mth = np.array([17.00,17.00,15.40,11.90,8.20,6.00,4.90,5.80,7.30,10.40,14.00,16.50])
-rel_humid_mth = np.array([71,72,69,62,54,53,52,51,50,53,59,66])
-# adding precipitation
+#rel_humid_mth = np.array([71,72,69,62,54,53,52,51,50,53,59,66])
+
 precip_mth = np.array([256,222,137,48,20,25,27,33,21,18,41,93])
 # adding precip days
 precip_days_mth = np.array([17.7,18.1,12.6,7.2,4.3,3.9,4.2,5,3.4,2.3,4.3,7.6])
@@ -279,15 +319,19 @@ precip_days_mth = np.array([17.7,18.1,12.6,7.2,4.3,3.9,4.2,5,3.4,2.3,4.3,7.6])
 rec_high_mth = np.array([35.5,36.0,36.5,35.0,34.5,33.0,32.5,32.5,35.5,36.5,37.0,37.0])
 rec_low_mth = np.array([11.0,10.0,5.5,1.5,0.5,0.0,0.5,0.0,0.5,0.5,6.5,9.5])
 
-climate_name = "Nouveau Yathrib 2290"
+climate_name = "NouveauYathrib_2290"
 
 time = np.linspace(0, 730, 730)
 
 # assumption: either dewpoint_mth is all zeros or relhumid_mth is all zeros, but not both
 # default: dewpoint_mth data is available making relhumid_mth redundant
 # https://stackoverflow.com/questions/18395725/test-if-numpy-array-contains-only-zeros
-if (np.all(dewpoint_mth == 0)) and not (np.all(relhumid_mth == 0)):
-  dewpoint_mth = calculate_dp_from_RH(avgs_mth, relhumid_mth)
+if (np.all(dewpoint_mth == 0)) and not (np.all(rel_humid_mth == 0)):
+  print(rel_humid_mth)
+  dewpoint_mth = np.round(calculate_dp_from_RH(avgs_mth, rel_humid_mth), 4)
+  # Australia climate data uses afternoon RH, use highs_mth
+  #dewpoint_mth = np.round(calculate_dp_from_RH(highs_mth, rel_humid_mth), 4)
+  print(dewpoint_mth)
 
 
 # https://stackoverflow.com/questions/48199077/elementwise-aggregation-average-of-values-in-a-list-of-numpy-arrays-with-same
@@ -338,7 +382,7 @@ wetbulb_avg_dp = calculate_wetbulb(avg_temps_new_[0:365], dp_temps_new_)
 # https://datagy.io/matplotlib-title/
 fig, ax = plt.subplots(figsize=(10,8))
 #plt.figure(figsize = (10,8))
-plt.title(climate_name + " average daily temperatures")
+plt.title(climate_name + " Average Daily Temperatures" + "")
 plt.xlabel("Day of year")
 plt.ylabel("Temperature (deg C)")
 plt.plot(time[0:365], high_temps_new_[0:365], 'g')
@@ -356,10 +400,12 @@ plt.plot(time[0:365], RL_temps, 'b')
 plt.xlim(0, 365)
 #plt.ylim(10, 50)
 ax.set_xticks([0, 31, 59, 90, 120, 151, 181, 212, 243, 273, 304, 334, 365])
+# remember to manually adjust the yticks range!
 ax.set_yticks(np.arange(0, 40, 5))
 ax.grid()
 plt.show()
 
+'''
 # https://pythonnumericalmethods.berkeley.edu/notebooks/chapter17.03-Cubic-Spline-Interpolation.html
 
 # monthly averages here from _______ fictional climate)
@@ -399,6 +445,7 @@ avg_temps_new_ = (np.array(low_temps_new_) + np.array(high_temps_new_))/2.0
 avg_temps_new_ = np.round(avg_temps_new_, 2)
 high_temps_new_ = np.round(high_temps_new_, 2)
 low_temps_new_ = np.round(low_temps_new_, 2)
+'''
 
 # trying to compute daily precip from monthly precip averages
 
@@ -436,7 +483,7 @@ precip_p_temp[0:365] = precip_prob_daily[0:365]
 precip_p_temp[365:730] = precip_prob_daily[0:365]
 
 # run smoothing operation for n cycles
-cycle_val = 20
+cycle_val = 50
 for i in range(0, cycle_val):
   # for each cycle, re-compute average daily precip based on 4-day running average across 2 calendar years
   for j in range(0, 730-4):
@@ -499,8 +546,11 @@ for i in range(0, cycle_val):
     precip_p_daily_new_runAvg[273:304] -= precip_p_diff_[9]/31
     precip_p_daily_new_runAvg[304:334] -= precip_p_diff_[10]/30
     precip_p_daily_new_runAvg[334:365] -= precip_p_diff_[11]/31
-    # reassign all negative values to equal 0; this is average precipitation
-    precip_p_daily_new_runAvg[precip_daily_new_runAvg < 0] = 0
+    # reassign all negative values to equal 0; probability should always be between 0 and 1
+    precip_p_daily_new_runAvg[precip_p_daily_new_runAvg < 0] = 0
+    precip_p_daily_new_runAvg[precip_p_daily_new_runAvg > 1] = 1
+    # reassign all indices where precip_daily_new_runAvg < 0 to equal 0
+    precip_p_daily_new_runAvg[precip_daily_new_runAvg <= 0] = 0
     # reassign the current daily precip averages to the temp array to be smoothed in the next cycle
     precip_p_temp[0:365] = precip_p_daily_new_runAvg[0:365]
     precip_p_temp[365:730] = precip_p_daily_new_runAvg[0:365]
@@ -570,7 +620,7 @@ print("Diff from source data: \n", np.round(precip_diff_p,2))
 
 #plt.figure(figsize = (10,8))
 fig, ax = plt.subplots(1, figsize = (10,8))
-plt.title(climate_name + " average 31-day floating precipitation")
+plt.title(climate_name + " Average 31-day Floating Precipitation")
 plt.xlabel("Day of year")
 plt.ylabel("Precipitation (mm)")
 plt.plot(tim[0:365], precip_daily_new_runAvg_sum[0:365], 'g')
@@ -585,7 +635,7 @@ plt.show()
 # plot precip
 #plt.figure(figsize = (10,8))
 fig, ax = plt.subplots(1, figsize = (10,8))
-plt.title(climate_name + " average daily precipitation")
+plt.title(climate_name + " Average Daily Precipitation")
 plt.xlabel("Day of year")
 plt.ylabel("Precipitation (mm/day)")
 plt.plot(tim[0:365], precip_daily, 'b')
@@ -618,7 +668,7 @@ ax2.plot(tim[0:365], precip_prob_daily[0:365], 'r')
 ax2.plot(tim[0:365], precip_p_daily_new_runAvg_, 'y')
 
 ax.grid()
-
+# need to manually set axis limits for each climate
 ax.set_ylim(0,10.0)
 ax2.set_ylim(0,1.0)
 plt.xlim(0,365)
@@ -646,7 +696,7 @@ predict_precip_int_smooth[730-2:] = predict_precip_int_smooth[365-2:365]
 
 
 fig, ax = plt.subplots(1, figsize = (10,8))
-plt.title(climate_name + " predicted precipitation intensity")
+plt.title(climate_name + " Predicted Precipitation Intensity")
 plt.xlabel("Day of year")
 plt.ylabel("Precipitation/day (mm)")
 plt.plot(tim[0:365], predict_precip_int_smooth[0:365], 'g')
@@ -673,6 +723,6 @@ avg_temps[:,5] = 1.0*np.round(precip_daily_new_runAvg_sum[0:365], 1)
 avg_temps[:,6] = 100*np.round(precip_p_daily_new_runAvg_[0:365], 4)
 
 np.set_printoptions(suppress=True, precision=2)
-np.savetxt(climate_name + 'daily_averages_.csv', avg_temps, delimiter=',',fmt='%f')
+np.savetxt(climate_name + '_daily_averages_.csv', avg_temps, delimiter=',',fmt='%f')
 
 #np.savetxt('precip_daily_31dayavg.csv', precip_daily_new_runAvg_sum, delimiter=',',fmt='%f')
