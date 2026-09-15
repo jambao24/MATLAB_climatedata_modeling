@@ -358,13 +358,17 @@ RL_temps   = assign_monthly_avg_to_days(rec_low_mth)
 
 
 # if daily average humidity, use dew points calculated from average temps
-if not humidityPM:
+if not hasDewpoint and not humidityPM:
 	dewpoint_temps = assign_monthly_avg_to_days(dewpoint_mth0)
 	dp_temps_new = compute_daily_temps_runAvg(dewpoint_temps, dewpoint_mth0, 50)
 # if afternoon average humidity, use dew points calculated from high temps
-elif humidityPM:
+elif not hasDewpoint and humidityPM:
 	dewpoint_temps = assign_monthly_avg_to_days(dewpoint_mth)
 	dp_temps_new = compute_daily_temps_runAvg(dewpoint_temps, dewpoint_mth, 50)
+# case: dew points already given, no need to calculate from relative humidity
+elif hasDewpoint:
+  dewpoint_temps = assign_monthly_avg_to_days(dewpoint_mth)
+  dp_temps_new = compute_daily_temps_runAvg(dewpoint_temps, dewpoint_mth, 50)
 
 
 high_temps_new_ = compute_daily_temps_runAvg(high_temps, highs_mth, 50)
