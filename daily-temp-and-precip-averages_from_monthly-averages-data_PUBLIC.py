@@ -191,6 +191,19 @@ def calculate_dp_from_RH(drybulb, rel_humid):
     vals2 = np.divide(c1*drybulb[0:12], (drybulb[0:12] + c2))
     dp = np.divide(c2*(vals1 + vals2), (c1 - (vals1 + vals2)))
     return dp
+    
+def calculate_RH_from_dp(drybulb, dewpoint):
+    # source: https://chatgpt.com/share/6aa97d48-4b58-83ea-979e-ca57d12599d1
+    # original source: https://en.wikipedia.org/wiki/Dew_point#Calculating_the_dew_point
+    rel_humid = np.zeros(12)
+    c1 = 17.625
+    c2 = 243.04
+    c3 = c2 * np.ones(12)
+    vals1 = c1*drybulb/(c3 + drybulb)
+    vals2 = c1*dewpoint/(c3 + dewpoint)
+    vals3 = vals2 - vals1
+    rel_humid = 100 * np.exp(vals3)
+    return rel_humid
 
 
 def subtract_offsets(curr_data_daily, offset_data_mth):
